@@ -1,0 +1,349 @@
+---
+title: "A song of ice and fire (books 1 to 5) network analysis"
+author: "Rafaela Becerra"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Ice of fire network 1
+## Packages needed
+```{r}
+library(igraph)
+```
+## Load the file GoT.RData to R.
+```{r}
+setwd("C:/Users/Rafaela Becerra/Desktop/UC3M/Network_Analysis/Assignments/GOT")
+load("GoT.RData")
+got.network <- union_edges
+```
+
+## Create the network.
+
+```{r}
+got.network <-graph_from_data_frame(union_edges,directed=TRUE,vertices=NULL)
+```
+
+```{r}
+class(got.network)
+```
+The network contains characters of the books from the A song of ice and fire
+series, i.e., each vertex is a character.
+```{r}
+head(V(got.network))
+```
+
+The edges corresponds to diferent type of relationships. 
+```{r}
+head(as_edgelist(got.network))
+```
+The relationships possible are:
+```{r}
+unique(edge_attr(got.network)$type)
+```
+The colors for the possible relationships given are:
+```{r}
+colors <- paste(unique(edge_attr(got.network)$color))
+plot(x=1:4, y=rep(4,4), pch=19,cex=15,col=colors, xlim=c(0.75,4.5),axes=FALSE, ann=FALSE)
+```
+
+## Order and size of the network.
+
+```{r}
+go<- gorder(got.network)
+print(paste('The order is: ',go))
+V(got.network)
+```
+```{r}
+gs<- gsize(got.network)
+print(paste('The size is: ',gs))
+```
+
+There are 208 characters and the relationships between them are represented by 404 edges.
+
+## Basic visual representation of the network and draw conclusions.
+```{r}
+plot.igraph(got.network,
+            layout=layout_in_circle,
+            vertex.label=NA,
+            main="GOT network with circular layout")
+```
+By looking at the graph we can see that there are a lot of relationships of 'father', the second most common appears to be 'mother', third 'spouse' and finally 'father/mother', which in fact was specify as a mistake of the data set. Moreover, we have verified that the only relationship that it is valid in both ways will be 'spouse' which corresponds to the pink edges. Additionally, we can see that there are some vertex without connections, we will check this in the below sections.
+
+# Ice of fire network 2
+## Nneighbors and the incident edges of Cersei Lannister (vertex number 4).
+```{r}
+neighbors(got.network,4)
+```
+
+```{r}
+incident(got.network,4)
+```
+##In, out and total degree of Cersei Lannister (vertex number 4).
+```{r}
+print(paste('The in degree is: ',degree(got.network,4,mode="in")))
+print(paste('The out degree is: ',degree(got.network,4,mode="out")))
+print(paste('The total degree is: ',degree(got.network,4,mode="total")))
+```
+
+## In, out and total degree sequence of the network.
+- The in degree:
+```{r}
+head(degree(got.network,mode="in"))
+sum(degree(got.network,mode="in"))
+```
+
+- The out degree:
+```{r}
+head(degree(got.network,mode="out"))
+sum(degree(got.network,mode="out"))
+```
+
+- The total degree:
+```{r}
+head(degree(got.network,mode="total"))
+head(gsize(got.network))
+```
+
+
+## Average in, out and total degree of the network.
+```{r}
+print(paste('The average in degree is: ',mean(degree(got.network,mode="in"))))
+print(paste('The average out degree is: ',mean(degree(got.network,mode="out"))))
+print(paste('The average total degree is: ',gsize(got.network)/gorder(got.network)))
+```
+```{r}
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+print(paste('The mode in degree is: ',getmode(degree(got.network,mode="in"))))
+print(paste('The mode out degree is: ',getmode(degree(got.network,mode="out"))))
+```
+
+We have checked that the values are the same and that the average degree is equal to the ratio of the size over the order of the network. We can say that each character is related with other two, approximately, and that the most common number of relationships with other characters is one. 
+
+
+## In, out and total degree distribution of the network and draw conclusions.
+- In degree distribution
+
+Frequency table
+```{r}
+table(degree(got.network,mode="in"))
+```
+
+```{r}
+hist(degree(got.network,mode="in"),
+     col="deepskyblue2",
+     main="In degree density histogram of the Got network",
+     xlab="Degree",
+     freq=TRUE)
+```    
+
+Degree distribution
+```{r}
+degree_distribution(got.network,mode="in")
+```
+
+Plot of the distribution
+```{r}
+plot(0:max(degree(got.network,mode="in")),
+     degree_distribution(got.network,mode="in"),
+     ylim=c(0,(max(degree_distribution(got.network,mode="in"))+0.01)),
+     col="deepskyblue2",lwd=2,
+     main="In degree distribution of GOT network",
+     xlab="In degree",
+     ylab="Frequency",
+     type="h")
+points(0:max(degree(got.network,mode="in")),
+       degree_distribution(got.network,mode="in"),
+       pch=20)
+text(0:max(degree(got.network,mode="in")),
+     degree_distribution(got.network,mode="in"),
+     labels=format(100*degree_distribution(got.network,mode="in"), digits=2), cex=0.5, font=1, pos=3)
+```
+
+```{r}
+plot(density(degree(got.network,mode="in")),
+     col="deepskyblue2",lwd=2,
+     main="Kernel density of in degree distribution of GOT network")
+```
+
+
+- Out degree distribution
+
+Frquency table
+```{r}
+table(degree(got.network,mode="out"))
+```
+
+```{r}
+hist(degree(got.network,mode="out"),
+     col="darkorange2",
+     main="Out degree density histogram of the Got network",
+     xlab="Degree",
+     freq=TRUE)
+```    
+Degree distribution
+```{r}
+degree_distribution(got.network,mode="in")
+```
+
+Plot of the distribution
+```{r}
+plot(0:max(degree(got.network,mode="out")),
+     degree_distribution(got.network,mode="out"),
+     ylim=c(0,(max(degree_distribution(got.network,mode="out"))+0.01)),
+     col="darkorange2",lwd=2,
+     main="Out degree distribution of GOT network",
+     xlab="Out degree",
+     ylab="Frequency",
+     type="h")
+points(0:max(degree(got.network,mode="out")),
+       degree_distribution(got.network,mode="out"),
+       pch=20)
+text(0:max(degree(got.network,mode="out")),
+     degree_distribution(got.network,mode="out"),
+     labels=format(100*degree_distribution(got.network,mode="out"), digits=2), cex=0.5, font=1, pos=3)
+```
+```{r}
+plot(density(degree(got.network,mode="out")),
+     col="darkorange2",lwd=2,
+     main="Kernel density of out degree distribution of GOT network")
+```
+
+The degree corresponds to the number of edges incident on a vertex, which in this case corresponds to the number of characters among all which each character relates. Given that this network involves directed connections we have two types 'in' and 'out' relations. We have calculated the frequency of these connections and also the their degree distribution, which is constructed by the probabilities that a selected vertex in the network has a degree d in a range of degrees.
+
+If we analyse the data from the distribution of the 'in' degree we can see that follows an asymmetric claw distribution, were the highest density corresponds to degree 1. If we check the frequency table we can see that 74 characters have only 1 relationship and that the minimum and maximum are 0 and 5, respectively. 
+
+With respect to the 'out' frequency table we can see that the minimum of relationships in zero and the maximum 12. Additionally, by looking at the distribution we can identify that it is skeewed to the right which is caused by a few characters that reach a higher number of connections than the average. Also, if we take the accumulated frequency of the distribution we see that more than 54% of the characters have between zero and one 'out' connections. 
+
+The number of out connections and the distribution of them is expected to reach higher values if we compare it to the 'in' connections because of the nature of the relationships, considering that the network just takes into account 'father', 'mother' and 'spouse' which means that the parents can have more than children and the out connections are higher in number and, conversely, one ideally can have just one wife or husband and one father and mother. 
+
+Moreover, a good insight about the 'in' and 'out' connections can be given by obtaining a subset of connections in both groups given that we could differenciate the principal characters that do not have ancestors, descendants or are not marry and become the last members of their families and as we have seen in the frequency tables are a representative number of characters.
+
+- Without 'in' connections
+```{r}
+degree(got.network,mode="in")[degree(got.network,mode="in")==0]
+```
+
+- Without 'out' connections
+```{r}
+degree(got.network,mode="out")[degree(got.network,mode="out")==0]
+```
+
+
+- Total degree distribution
+
+Frquency table
+```{r}
+table(degree(got.network,mode="total"))
+```
+```{r}
+hist(degree(got.network,mode="total"),
+     col="pink",
+     main="Total degree density histogram of the Got network",
+     xlab="Degree",
+     freq=TRUE)
+```   
+Degree distribution
+```{r}
+degree_distribution(got.network,mode="total")
+```
+Plot of the distribution
+```{r}
+plot(0:max(degree(got.network,mode="total")),
+     degree_distribution(got.network,mode="total"),
+     ylim=c(0,(max(degree_distribution(got.network,mode="total"))+0.01)),
+     col="pink",lwd=2,
+     main="Total degree distribution of GOT network",
+     xlab="Total degree",
+     ylab="Frequency",
+     type="h")
+points(0:max(degree(got.network,mode="total")),
+       degree_distribution(got.network,mode="total"),
+       pch=20)
+text(0:max(degree(got.network,mode="total")),
+     degree_distribution(got.network,mode="total"),
+     labels=format(100*degree_distribution(got.network,mode="total"), digits=2), cex=0.5, font=1, pos=3)
+```
+```{r}
+plot(density(degree(got.network,mode="out")),
+     col="pink",lwd=2,
+     main="Kernel density of total degree distribution of GOT network")
+```
+
+By taking a look at the total distribution we can see that the higher frequency is given by degree 1, which means that is common for characters to have only one relationship. Moreover, we see that the distribution is skeewed just like the 'out' distribution which is understandable since the total degree will join both 'in' and 'out' connections, consequently, we can attribute this to the fact that there are some characters that have lots of children. 
+
+
+Additionally, we can easily identify that there are not aislated characters, since the degree 0 is equal to zero. Moreover, we could say that more than 52% have at least 3 relationships, then we will be able to identy large families and as we have seen the connections among the characters are complex. 
+
+# Ice of fire network 3
+## Check whether the network is connected (strongly and weakly) and obtain the components in both cases.
+
+```{r}
+is_connected(got.network,mode="weak")
+```
+Weak components
+```{r}
+components(got.network,mode="weak")$csize
+components(got.network,mode="weak")$no
+```
+
+Principal weak components
+```{r}
+membership.w <-data.frame(components(got.network,mode="weak")$membership)
+membership.w <-membership.w[order(membership.w[,1], decreasing=TRUE),, drop=FALSE]
+head(membership.w)
+```
+
+```{r}
+is_connected(got.network,mode="strong")
+```
+
+Weak components
+```{r}
+components(got.network,mode="strong")$csize
+components(got.network,mode="strong")$no
+```
+
+Principal weak components
+```{r}
+membership.s <-data.frame(components(got.network,mode="strong")$membership)
+membership.s <-membership.s[order(membership.s[,1], decreasing=TRUE),, drop=FALSE]
+names(membership.s)[1]<- 'countvar'
+library(dplyr)
+membership.s2 <- membership.s %>%group_by(countvar)%>% summarise(count=n())
+head(membership.s)
+```
+
+## Diameter, path and farthest vertices (strongly and weakly).
+```{r}
+get_diameter(got.network,directed=TRUE)
+diameter(got.network,directed=TRUE)
+farthest_vertices(got.network,directed=TRUE)
+V(got.network)$name[get_diameter(got.network,directed=TRUE)]
+```
+
+```{r}
+get_diameter(got.network,directed=FALSE)
+diameter(got.network,directed=FALSE)
+farthest_vertices(got.network,directed=FALSE)
+V(got.network)$name[get_diameter(got.network,directed=FALSE)]
+```
+
+
+The results show that this network is not connected in a weakly way which means that there are characters that are not connected at all and that we will have separate groups that can be traduce to subgraphs. In fact, there are two groups in this network which will be formed by two different families since the connections represent the relationships among characters. 
+
+Moreover, the complete network is also not strongly connected, which means that we will not have a stage where any vertex is reachable from every other vertex by a directed walk, this is obvius because there are relationships that do not behave in both ways, and it is imposible that the families will be all related.
+
+In this network, we have 130 groups that are indeed strongly connected, these are groups of characters that do relate with each other like spouses for example. The 130 also considers the characters that are strong connected only with themselves, these are 71 characters. 
+
+We have also calculate the farthest vertices, the distance among them and the diameter. For the strongly connected we got that the diameter was 11 vertices, the distance was 10 and the farthest vertices the character Gilliane Glover and Tysha. Conversely, for the weakly related, the diameter is higher, as we could expected, where its value is 22 and the farthest vertices, then the larger group of related characters, start with Lia Serry and ends with Robyn Ryswell.
+
+
+

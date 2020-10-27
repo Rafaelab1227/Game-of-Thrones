@@ -1,0 +1,387 @@
+---
+title: "A song of ice and fire (books 1 to 5) network visualization"
+author: "Rafaela Becerra"
+output:
+  html_document:
+    number_sections: yes
+---
+# Visualization
+## Packages needed
+```{r}
+library(igraph)
+```
+
+## Load the file GoT.RData to R.
+```{r}
+setwd('C:/Users/Rafaela Becerra/Desktop/UC3M/Network_Analysis/Assignments/Starwars')
+
+load("GoT.RData")
+got.network <- union_edges
+```
+
+## Create the network using: graph from data frame(union edges,directed=TRUE,vertices=NULL)
+```{r}
+got.network <-graph_from_data_frame(union_edges,directed=TRUE,vertices=NULL)
+```
+
+## Visual representation of the graph with the simple graph layouts.
+
+```{r}
+#Degree generator for circular layouts
+rescale <- function(x, start=0, direction=1) {
+ rotate <- function(x) (x + start) %% (2 * pi) * direction
+ rotate(scales::rescale(x, c(0, 2 * pi), range(x)))
+}
+
+degrees <- rescale(x=1:208, direction=-1, start=0)
+```
+
+```{r, fig.width=10, fig.height=10}
+
+par(mar=c(2,2,2,2))
+
+plot.igraph(got.network,
+            layout=layout_in_circle,
+            main='GOT network with circular layout',
+            vertex.label=V(got.network),
+            vertex.label.color="black",
+            vertex.label.dist=1.5,
+            vertex.label.cex=0.5,
+            vertex.label.degree=degrees,
+            vertex.color='chartreuse3',
+            vertex.size=4
+            )
+
+```
+```{r, fig.width=10, fig.height=10}
+par(mar=c(2,2,2,2))
+
+plot.igraph(got.network,
+            layout=layout_as_star,
+            main='GOT network with star layout',
+            vertex.label=V(got.network),
+            vertex.label.color="black",
+            vertex.label.cex=0.5,
+            vertex.label.degree=degrees,
+            vertex.label.dist=1.5,
+            vertex.color='cyan',
+            vertex.size=4,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+          )
+
+```
+```{r}
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_as_tree,
+            main='GOT network with tree layout',
+            vertex.label=V(got.network),
+            vertex.color='burlywood',
+            vertex.label.cex=0.75
+            )
+
+```
+```{r, fig.width=6, fig.height=6}
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_on_grid,
+            main='GOT network with grid  layout',
+            vertex.label=V(got.network),
+            vertex.color='gray',
+            vertex.label.color="black",
+            vertex.label.cex=0.5,
+            vertex.size=10,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+
+```{r, fig.width=6, fig.height=6}
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_on_sphere,
+            main='GOT network with sphere layout',
+            vertex.label=V(got.network),
+            vertex.label.color="black",
+            vertex.color='aquamarine1',
+            vertex.label.cex=0.5,
+            vertex.size=10,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+
+```
+
+```{r, fig.width=6, fig.height=10}
+library('edgebundleR')
+edgebundle(got.network,
+           fontsize = 7)
+
+```
+
+
+```{r, fig.width=6, fig.height=10}
+library('devtools')
+#devtools::install_github("mattflor/chorddiag", ref = "issue-11-chord-colors")
+library('chorddiag')
+chorddiag(as.matrix(as_adjacency_matrix(got.network)),
+          margin = 100,
+          groupnameFontsize = 10,
+          ticklabelFontsize = 10,
+          showGroupnames = TRUE,
+          showTicks = FALSE,
+          groupnamePadding = 10,
+          )
+
+```
+
+The graphs previously seen present different types of layouts for representating the same network of the relationships in Game Of Thrones (GOT) of 208 characters that appear in the books A song of ice and fire series.
+
+We have performed graphs with the next layouts:
+
+1. Circular layout were the vertices are arranged in a circle with a prespecified order beggining with the center-right and continuing with the circumference above, ordering the characters according to the order they maintain in the data. For this graph, the labels have been formated to present a simple view considering the amount of data that the network involves. 
+
+2. Star layout that organized the characters just like the circular layout but puts a character into the center. The first character on the data is the one that by default is on the center. Once again, the labels have been arrange to improve the visualization of the graph.
+
+3. Tree layout, which arranges the characters based on their connections. This graph will allow to see more clearly the relationships but there are a lot of characters (208) so the display of the graph has been particionated appearing just a part of it.
+
+4. Grid layout which organized the characters in a rectangular matrix form. This is not the optimal layout because there are a large number of vertices consequently, the connections turn out very confussing if the vertices are not display more separatetly.
+
+5. Sphere layout which displays the vertices approximately uniformly. Eventhough this layout disperse a lot the vertices, the missing arrange of them turns the graph to become confussing. 
+
+6. Additionally, with the *edgebundleR* library, we have performed a chord diagram which allows to create an interactive graph that displays in a nicer way the characters but the *directed* argument which defines whether or not the graph is directed has not been implemented yet in the package, consequently, this will not be a valid option to display. 
+
+Moreover, with the *chorddiag* library we created another chord diagram that plot the relationships of the characters but does not accept a logical value on it, therefore, we could only plot the number of connections of the characters but without label them, which is a huge advantage of the other charts.
+
+In conclusion, after testing this layouts, we can determined that when dealing with large graphs which describe social relations among the vertices it is important to display the data in a form that gives some minor insights at least about the clusters that can be forming. As we saw in assignment 5 there are two components of the network which separate the families. In this case, none of the layouts above returned this insight clearly so as we will explore in the next section, there are other alternatives that will perform better.  
+
+Nevertheless, by looking at the graphs with the star and the circular layout, which are the ones that allow to see at least the whole network representation by separating the vertices, we can have some insights. As we can see, there are a lot of relationships of 'father' (green arrows), the second most common appears to be 'mother' (purple arrows), third 'spouse' (rose arrows) and finally 'father/mother' (orange arrow), which in fact was specify as a mistake of the data set. 
+
+Additionally, we have verified that the only relationship that it is valid in both ways will be 'spouse' which corresponds to the pink edges. Moreover, we can see that there are some vertex without connections towards other characters which will mean that do not have descendents or are not marry, we will have an insight about this by taking a look at other type of layouts.
+
+
+## Visual representation of the induced subgraph with other graph layouts.
+
+```{r}
+#Create a copy of the network before changes for mds
+got.network1 <- got.network
+```
+
+```{r}
+#Changes of the colors based on groups
+V(got.network)$group <- components(got.network,mode="weak")$membership
+V(got.network)$group[V(got.network)$group==1] <- 'aliceblue'
+V(got.network)$group[V(got.network)$group==2] <- 'darksalmon'
+```
+
+```{r}
+#Changes of the shapes
+V(got.network)$shape <- "circle"
+
+V(got.network)[c("Jasper Arryn", "Princess of Dorne", "Gilliane Glover","Rickon Stark son of Benjen",
+            "Rodrik Stark","Betha Blackwood","Dyanna Dayne","Maekar I Targaryen",
+            "Unknown mother Tyrell","Unknown father Tyrell" )]$shape <- "sphere"
+
+V(got.network)[c("Robert Arryn","Myrcella Baratheon","Shireen Baratheon",
+                 "Walder Frey son of Emmon","Walder Frey son of Merrett",
+                 "Marissa Frey","Olyvar Frey","Perwyn Frey","Tion Frey",
+                 "Tywin Frey","Willamen Frey","Willem Frey","Quenton Greyjoy",
+                 "Robin Greyjoy","Urrigon Greyjoy","Donel Greyjoy","Euron Greyjoy",
+                 "Harlon Greyjoy", "Aeron Greyjoy", "Maron Greyjoy","Theon Greyjoy",
+                 "Victarion Greyjoy","Rodrik Greyjoy","Cerenna Lannister",
+                 "Lucion Lannister","Myrielle Lannister","Willem Lannister",
+                 "Daven Lannister","Gerion Lannister", "Rhaenys Targaryen daughter of Rhaegar",
+                 "Aegon Targaryen son of Rhaegar","Mors Martell brother of Doran",
+                 "Loreza Sand","Obella Sand","Elia Sand","Nymeria Sand", "Dorea Sand",
+                 "Obara Sand","Tyene Sand", "Sarella Sand","Arya Stark","Bran Stark",
+                 "Benjen Stark","Jon Snow","Rickon Stark","Brandon Stark Burner",
+                 "Viserys Targaryen","Luthor Tyrell son of Theodore","Medwick Tyrell",
+                 "Elinor Tyrell","Hobber Redwyne","Horas Redwyne","Willas Tyrell"
+                 ,"Loras Tyrell")]$shape <- "square"
+
+
+vertex_attr_names(got.network)
+```
+
+```{r, fig.width=10, fig.height=10}
+
+set.seed(123)
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_with_dh,
+            main='GOT network with Davidson-Harel layout',
+            vertex.label=V(got.network),
+            vertex.color=V(got.network)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+
+
+```{r, fig.width=10, fig.height=10}
+
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_with_fr,
+            main='GOT network with Fruchterman-Reingold layout',
+            vertex.label=V(got.network),
+            vertex.color=V(got.network)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+
+```{r, fig.width=10, fig.height=10}
+
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_with_gem,
+            main='GOT network with GEM force-directed layout',
+            vertex.label=V(got.network),
+            vertex.color=V(got.network)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+```{r, fig.width=10, fig.height=10}
+
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_with_graphopt,
+            main='GOT network with graphopt layout',
+            vertex.label=V(got.network),
+            vertex.color=V(got.network)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+
+```{r, fig.width=10, fig.height=10}
+
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network,
+            layout=layout_with_kk,
+            main='GOT network with Kamada-Kawai layout',
+            vertex.label=V(got.network),
+            vertex.color=V(got.network)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+ 
+```{r, fig.width=10, fig.height=10}
+
+#Changes of the colors based on groups
+V(got.network1)$group <- components(got.network1,mode="weak")$membership
+V(got.network1)$group[V(got.network1)$group==1] <- 'aliceblue'
+V(got.network1)$group[V(got.network1)$group==2] <- 'darksalmon'
+
+par(mar=c(0,0,2,1))
+
+
+plot.igraph(got.network1,
+            layout=layout_with_mds,
+            main='GOT network with multidimensional scaling layout',
+            vertex.label=V(got.network1),
+            vertex.color=V(got.network1)$group,
+            vertex.label.cex=0.7,
+            vertex.size=5,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+We have created six more layouts for the GOT relationship network:
+
+1. Davidson-Harel layout which is based on an algorithm for creating an energy function that distributes the vertices that in this case are the characters away from each other and minimizes the edge crossing. It presents a much better structure that differenciates both components of the network which are separated because the groups are not related by any character. Then, we have two separate families that do not relate in any way. Moreover, we are able to distinguish better the inner families inside both groups that also lead to edges of the form compose by characters that do not have decendents. For example in the second group, we are able to identify that the son of character 30 marry 28 and has 4 sons with his spouse and one of them got married. This analysis can be performed with a lot of groups. Additionally, we are able to see the type of connections which are distinguish by solid and pointed arrows, separating the ones that have been broken, this neither of the passed layouts allow us to do.
+
+2. Fruchtermann and Reingold, which in this case performed a better separation since the distribution of the vertices is more wide and allow us to see more clearly the arrows and the relations of the characters. We could say that this is the best view of the network. 
+
+3. GEM force-directed layput which algorithm has performed a better visualization than any other shown in the previous section, but not as good as Davidson-Harel or Fruchtermann and Reingold. Here, the components are not display clearly and are lost in the graph.
+
+4. Graphopt layout, which once again as the GEM force-directed, generates a graph with which we are facing a display that does not allow us to see the different families clearly, but it does stablish a good distance between the inner families of the bigger group by separting the vertices in a better way.
+
+5. Kamada and Kawai layout, which in this case displays a representation separating both components in a good way but the space generated between them is too large and, conversely, does not achieve a separation of each of the groups, then, it is impossible to identify clearly the type of relationships among the characters. This type of layout, could be a better choice when there are not types of edges and only matter the clusterization among the vertices.
+
+To achive a better representation of the network using this layouts, we have first, create a vertex attribute that differenciates the components membership and assigns different colors to them. Second, we have identified the characters in each of the families that do not have 'in' edges, which are the ones that could be the heads of the families which do nor have predecessors or are not marry to identify the origin of the groups, this names we take out of the assignment 5. Moreover, we have change the shape of the characters that do not have decendents or are not marry, this characters are given by the ones that do not have 'out' connections. 
+
+Additionally, by separting the network in this way we are able to see that there are a lot of characters which do not have decendents in the small group (salmon painted), this could mean that the dinasty is in danger. We could also say that the origin of both of the newtworks are a marriage between two characters and that there are a lot of characters introduced by marriages of their sons. Moreover, we are able to identify various ends of the branches of the large group that do not have descentes as well. 
+
+
+If we take a look a these visualizations and compare them, we can see that the one which shows better the data, as said, is the Fruchtermann and Reingold which in this case achieves a clear separation of all of the characters and shows the 208 character whitouth overlaying them and a clear path of the relationship among them that allow us to identify the families.
+
+
+Finally, we have created a graph based on the multidimensional scaling layout, which projects the points from a higher dimensional space in a plane. We can see that this layout is the worst for this data as the vertices mix up and the display is not clear considering this method does not allow changing some characteristic like the shapes. 
+
+## Best possible representation of the graph with the multidimensional scaling layout. 
+
+```{r, fig.width=10, fig.height=10}
+set.seed(123)
+
+par(mar=c(0,0,2,1))
+
+plot.igraph(got.network1,
+            layout=layout_with_mds,
+            main='GOT network with multidimensional scaling layout',
+            vertex.label=V(got.network1),
+            vertex.color=V(got.network1)$group,
+            vertex.label.color="black",
+            vertex.label.cex=0.7,
+            vertex.size=4,
+            edge.width=1.2,
+            edge.arrow.size=0.6,
+            edge.arrow.width=1.2
+            )
+
+```
+
+This was the best represtation that we could obtain with the multimensional scaling layout, this as we can see is not the best way to present this network because does not separate well the characters and does not show a complete representation of the relationships. We have to consider that this method is based on calculating the distances between the vertices based on the length of the shortest path(s), but  here we have a lot of relationships which pad is just direct, consequently, this could explain way some of the vertices overlay as they have the same distance. 
+
+Nevertheless, this type of graph is good to resume the network, as it allow us to see that there are some vertices wich are apart and creates communities among them so we are able to identify the main characters that start this communities and distinguish clearly the groups generated among all the characters.
+
+
+
+
+
+
+

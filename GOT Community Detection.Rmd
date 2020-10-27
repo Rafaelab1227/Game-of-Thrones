@@ -1,0 +1,454 @@
+---
+title: "A song of ice and fire (books 1 to 5) community detection"
+author: "Rafaela Becerra"
+output:
+  html_document:
+    number_sections: yes
+    df_print: kable
+---
+
+# A song of ice and fire (books 1 to 5) network
+
+## Packages needed
+
+```{r}
+set.seed(123)
+library(igraph)
+```
+
+## Load the network.
+
+```{r}
+setwd("C:/Users/Rafaela Becerra/Desktop/UC3M/Network_Analysis/Assignments/Starwars")
+load("GoT.RData")
+got.network <- union_edges
+```
+
+```{r}
+got.network <-graph_from_data_frame(union_edges,directed=TRUE,vertices=NULL)
+gsize(got.network)
+gorder(got.network)
+data <- as_data_frame(got.network)
+```
+
+## Cliques of the network, as well as the graph coreness.
+
+
+### Cliques
+
+```{r}
+got.network.cliques <- cliques(got.network)
+length(got.network.cliques)
+table(sapply(got.network.cliques,length))
+```
+
+```{r}
+head(largest_cliques(got.network))
+got.network.max.cliques <- max_cliques(got.network)
+table(sapply(got.network.max.cliques,length))
+```
+
+Recall that this network contains as the vertices the characters of the books from the A song of ice and fire series, and presents by the edges the relationship among them of "mother","father", and "spouse" being a directed graph considering that the arcs contain directions. A clique can be understood as a complete subgraph were its vertices are totally connected, for this to happend in the network we will be facing an omission of the direction of the relations. Considering this set, there are a total of 639 cliques, with sizes 1, 208, size 2, 326, and, size 3 105. By the nature of the data and by taking a look at the results we can confirmed that the maximum size cliques will be given by father, mother and child, because is the type of relation that will allow the vertices to connect to each other fully. Moreover, we check the maximal number of cliques to see if the rest of the cliques are just subgraphs of these ones. As we can see, 74 out of the 326 correspond to the maximal size cliques, this means that 74 out of the 326 are spouse relations with children.
+
+### Coreness
+```{r}
+got.network.cores <- graph.coreness(got.network,mode="all")
+got.network.cores
+```
+
+Next, we have calculated the coreness which returns the maximal k-core for the set of vertices of the graph. We can see that the maximum number of this measure is 4, which means that considering directions there are characters that connect with at least 4 other characters. The characters that meet this condition are Cersei Lannister, Cassana Baratheon, Robert Baratheon, Steffon Baratheon, Jaime Lannister, Joanna Lannister, Tywin Lannister, Tommen Baratheon, Joffrey Baratheon, Margaery Tyrell, and  Renly Baratheon.   Additionally, we present a histogram with the results of the k-core, as we can see, most of the characters are part of a subgraph with no more than 2 join vertices, which confirms that the network is not dense. This is understandable because the data contains just three types of relationships, then it can not be expected to have a large number of connections among the characters.  
+
+```{r}
+max(got.network.cores)
+which(got.network.cores==max(got.network.cores))
+length(which(got.network.cores==max(got.network.cores)))
+
+hist(got.network.cores,
+     col="chartreuse3",
+     main="Histogram for the k-cores in the GOT network")
+```
+
+
+## Density and the clustering coefficient (transitivity) of the network.
+
+### Density
+```{r}
+sim.got.network <- simplify(got.network)
+
+print(paste('Density of GOT network: ',edge_density(sim.got.network)))
+
+ego.1 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Cersei Lannister"))
+print(paste('Density of the ego network of Cersei Lannister: ',edge_density(ego.1[[1]])))
+
+ego.2 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Cassana Baratheon"))
+print(paste('Density of the ego network of Cassana Baratheon: ',edge_density(ego.2[[1]])))
+
+ego.3 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Robert Baratheon"))
+print(paste('Density of the ego network of Robert Baratheon: ',edge_density(ego.3[[1]])))
+
+ego.4 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Steffon Baratheon"))
+print(paste('Density of the ego network of Steffon Baratheon: ',edge_density(ego.4[[1]])))
+
+ego.5 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Jaime Lannister"))
+print(paste('Density of the ego network of Jaime Lannister: ',edge_density(ego.5[[1]])))
+
+ego.6 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Joanna Lannister"))
+print(paste('Density of the ego network of Joanna Lannister: ',edge_density(ego.6[[1]])))
+
+ego.7 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Tywin Lannister"))
+print(paste('Density of the ego network of Tywin Lannister: ',edge_density(ego.7[[1]])))
+
+ego.8 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Tommen Baratheon"))
+print(paste('Density of the ego network of Tommen Baratheon: ',edge_density(ego.8[[1]])))
+
+ego.9 <- make_ego_graph(sim.got.network,order=1,
+                        nodes=which(V(sim.got.network)$name=="Margaery Tyrell"))
+print(paste('Density of the ego network of Margaery Tyrell: ',edge_density(ego.9[[1]])))
+
+ego.10 <- make_ego_graph(sim.got.network,order=1,
+                         nodes=which(V(sim.got.network)$name=="Renly Baratheon"))
+print(paste('Density of the ego network of Renly Baratheon: ',edge_density(ego.9[[1]])))
+
+ego.11 <- make_ego_graph(sim.got.network,order=1,
+                         nodes=which(V(sim.got.network)$name=="Joffrey Baratheon"))
+print(paste('Density of the ego network of Joffrey Baratheon: ',edge_density(ego.9[[1]])))
+
+```
+
+We have calculated the density for the GOT Network, which results in a value of 0.00938. The density measurement can be understood as the percentage of edges that are being taken into account in the network from the total potential ones. In this case, we can see that this is a really low value but this is expected considering the data. As said before, because of the type of relationships and the directions that they have we can not expect that all the characters will connect. Consequently, in this case the density does not say much about the network just that it is not dense at all. Moreover, just to see how is the behavior of the neighborhood of each of the characters that were identify to have more connections, we are taking a look at their densities, the results show that Cassana Baratheon has the largest density of 0.4, which means that it is more densly connected than the rest. 
+
+### Transitivity
+```{r}
+transitivity(got.network,type="global")
+```
+
+The transitivity is a ratio that measures the number of closed triplets in the graph compare to the total number of triplets. If we take into account this measurement, we can see that the network has only 28.50% of closed triplets, this is a low value, but once again we are facing a network that is expected not to be highly connected between its characters. 
+
+
+## Number of components of the network. 
+
+```{r}
+comps.weak.got.network <- igraph::components(got.network,mode="weak")
+comps.weak.got.network$no
+comps.weak.got.network$csize
+table(comps.weak.got.network$csize)
+max(comps.weak.got.network$csize)/vcount(got.network)
+```
+
+```{r}
+comps.strong.got.network <- igraph::components(got.network,mode="strong")
+comps.strong.got.network$no
+comps.strong.got.network$csize
+table(comps.strong.got.network$csize)
+max(comps.strong.got.network$csize)/vcount(got.network)
+```
+
+From a global perspective, by taking a look at the components of the network without directions, we can see that we only have two components that divide all the characters. Now, these are formed by characters that relate with other characters among each group but do not connect in any way to the other group and can be understood as two large families. We see that the giant component harbors 108 out of the 208 characters which correspond to 90.86%. Moreover, if we consider the direction of the edges and take into account the type of relation between the characters we see that there are 130 components, 71 of size 1, 47 with 2 characters, 6 with 3, 5 with 4 characters and lastly, just 1 of five characters. Next, we are plotting the components with 5 and 4 characters, as we can see these are formed by large connections of spouses, which is understandable since is the only relationship that is in both ways, as consequence can be formed by more characters. For all the mean distance is 
+approximately two and the transitivy zero as we are considering a directed path. 
+
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)
+                                   [comps.strong.got.network$membership==129])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+gc.got.network
+mean_distance(gc.got.network)
+transitivity(gc.got.network,type="global")
+```
+
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)
+                                   [comps.strong.got.network$membership==28])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+gc.got.network
+mean_distance(gc.got.network)
+transitivity(gc.got.network,type="global")
+```
+
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)[comps.strong.got.network$membership==118])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+mean_distance(gc.got.network)
+transitivity(gc.got.network,type="global")
+```
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)
+                                   [comps.strong.got.network$membership==126])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+mean_distance(gc.got.network)
+transitivity(gc.got.network,type="global")
+```
+
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)
+                                   [comps.strong.got.network$membership==100])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+mean_distance(gc.got.network)
+transitivity(gc.got.network)
+```
+```{r}
+gc.got.network <- induced_subgraph(got.network,vids=V(got.network)
+                                   [comps.strong.got.network$membership==100])
+plot.igraph(gc.got.network,
+            vertex.color=V(gc.got.network)$group)
+
+mean_distance(gc.got.network)
+transitivity(gc.got.network)
+```
+
+The small-world property can be considered when the shortest-path distance between pairs of vertices is generally quite small, and when the clustering coefficient is relatively high. Even though, the mean distance between vertices is small, this network does not holds the Small world property considering that the clustering coefficient, by taking into account the direct paths, is almost null.
+
+
+## Community detection methods.
+
+
+```{r}
+method.compare <- setNames(data.frame(matrix(ncol = 3, nrow = 6)), c("Modularity", "K",
+                                                                     "Time elapsed"))
+
+row.names(method.compare) <- c('Optimal','Fast greedy','Louvain',
+                                'Label propagation','Edge betweeness','Walktrap')
+```
+
+```{r}
+# Transform to undirected network
+und.got.network <- as.undirected(got.network,mode="each")
+# Take out multiple edges and loops if they exist.
+sim.und.got.network <- simplify(und.got.network)
+```
+
+### Fast greedy community detection
+
+The fast greedy is a simplified version of the maximal optimal modality which allows making faster computations to detect communities. In this case, we are taking the undirected network because this method does not take into account directions and as we can see that the number of communities resulting as optimal is 11 with a high value of modality of the partition of 0.82.
+
+The first community is formed by 37 characters, in this group we see mostly characters of the Stark, the Arryn and the Tully family, which make sense considering that there is a relation between this families based on the fact that Hoster Tully is the father of Lysa Arryn and Catelyn Stark. In the second community with a size of 23, we see a lot of characters of the Lannister family. As well, in the third of size 18, the predominant last name is Frey, the fourth with 19 characters appear members of the Greyjoy family. In the fifth community of size 14, we can see a lot of characters with the Sand last name. In the seven community of size 16 we see members of the Tyrell family, in eight of size 14 Baratheon member, in nine with size 19 Targaryen, and in the sixth, eleven and tenth community some various last names. As proven, it seems a really good partition considering that it has taken into account the relations and separates well the characters.  
+
+
+```{r}
+Start_time <- Sys.time()
+got.network.fg <- cluster_fast_greedy(sim.und.got.network)
+got.network.fg
+End_time <- Sys.time()
+
+print(paste('Time elapsed: ', (End_time-Start_time)))
+```
+```{r}
+length(got.network.fg)
+sizes(got.network.fg)
+membership(got.network.fg)
+modularity(got.network.fg)
+```
+
+```{r}
+method.compare[2,1]<- modularity(got.network.fg)
+method.compare[2,2]<- length(sizes(got.network.fg))
+method.compare[2,3]<-(End_time-Start_time)
+```
+
+```{r}
+par(mar=c(0,0,1,1))
+plot(got.network.fg,
+     got.network,
+     vertex.color=membership(got.network.fg),
+     vertex.label=seq(1:111),
+     #vertex.label=NA,
+     main="got.network network with fast greedy")
+
+```
+
+
+### Louvain community detection
+
+The Louvain community detection method is similar to the optimal modularity but the optimization is done using a hierarchical approach. In this case, we are considering the undirected network as same as before. The results for this method show that the optimal number of communities is 14, 3 more than the Fast greedy. Now the modularity increases to 0.8501 compared to the past method. 
+
+The characters have been partitioned into similar number sizes, comparing to the presented above, in this case, there is a break of a group, as we can see the Starks and the Arryn are now in separate groups, the Arryn family lays in the tenth community, and the Stark members in number 12, mostly. The sizes of these communities correspond to 13 and 18. Moreover, we can see a separation of the Tyrell family members, and also other families like the Frey, Martell present this behavior. Furthermore, the smaller communities are the fourth and the eight with 9 characters. 
+
+
+```{r}
+Start_time <- Sys.time()
+got.network.lo <- cluster_louvain(und.got.network)
+got.network.lo
+End_time <- Sys.time()
+
+print(paste('Time elapsed: ', (End_time-Start_time)))
+```
+
+```{r}
+length(got.network.lo)
+sizes(got.network.lo)
+membership(got.network.lo)
+modularity(got.network.lo)
+```
+
+
+```{r}
+method.compare[3,1]<- modularity(got.network.lo)
+method.compare[3,2]<- length(sizes(got.network.lo))
+method.compare[3,3]<-(End_time-Start_time)
+```
+
+```{r}
+par(mar=c(0,0,1,1))
+plot(got.network.lo,
+     got.network,
+     vertex.color=membership(got.network.fg),
+     vertex.label=seq(1:111),
+     #vertex.label=NA,
+     main="got.network network with Louvain")
+
+```
+
+### Label propagation community detection
+
+The label propagation method considers a partition based on the vertex neighborhood. In this case, we see that the modularity obtained is of 0.8502 just 0.0001 bigger than the past method and that the optimal K remians as 14. We can se some reconfiguration of the partition of the last method, but is almost the same. Now, we have 14 communities were the biggest ones remain with 22 characters, and the smallest one 9. We can also, identify the same behavior, referring to the predominant surname in each group and how communities are mixing to harbor members of the same family.
+
+```{r}
+Start_time <- Sys.time()
+got.network.lp <- cluster_label_prop(und.got.network,
+                                     initial=as.vector(membership(got.network.lo)))
+got.network.lp
+End_time <- Sys.time()
+
+print(paste('Time elapsed: ', (End_time-Start_time)))
+```
+
+```{r}
+length(got.network.lp)
+sizes(got.network.lp)
+membership(got.network.lp)
+modularity(got.network.lp)
+```
+
+```{r}
+method.compare[4,1]<- modularity(got.network.lp)
+method.compare[4,2]<- length(sizes(got.network.lp))
+method.compare[4,3]<-(End_time-Start_time)
+```
+
+```{r}
+par(mar=c(0,0,1,1))
+plot(got.network.lp,
+     got.network,
+     vertex.color=membership(got.network.lp),
+     vertex.label=seq(1:111),
+     #vertex.label=NA,
+     main="got.network network with label propagation")
+
+```
+
+### Edge betweenness community detection
+
+This method bases the community detection on the edge betweenness of the set of edges in the network. The same as for the Starwars case, this network is big but it can still be computed by this method. The results show a modularity smaller than the rest of methods with a value of 0.8359 considering a K equal to 12. 
+
+The partition suggested by this method involves the same as for the past methods some similar size communities, where the biggest ones are of size 22 and the smallest one of 9. Moreover, we do see some differences in the combination of characters in the groups, now we see a partition more similar to the Fast greedy method that combines some families for example, in group one is joinning the Arryn, with some of the Stark members.
+
+
+```{r}
+Start_time <- Sys.time()
+got.network.eb <- cluster_edge_betweenness(sim.und.got.network,directed=FALSE)
+got.network.eb
+End_time <- Sys.time()
+
+print(paste('Time elapsed: ', (End_time-Start_time)))
+```
+
+```{r}
+length(got.network.eb)
+sizes(got.network.eb)
+membership(got.network.eb)
+modularity(got.network.eb)
+```
+
+```{r}
+method.compare[5,1]<- modularity(got.network.eb)
+method.compare[5,2]<- length(sizes(got.network.eb))
+method.compare[5,3]<-(End_time-Start_time)
+```
+
+```{r}
+par(mar=c(0,0,1,1))
+plot(got.network.eb,
+     got.network,
+     vertex.color=membership(got.network.eb),
+     vertex.label=seq(1:111),
+     #vertex.label=NA,
+     main="got.network network with edge betweenness")
+
+```
+
+
+
+### Walktrap community detection
+
+The Walktrap community detection bases partition on a hierarchical clustering considering distances between vertices. In this case, the algorithm works with the directed network as the input. As we see the results show that the optimal k is equal to 19 with a modularity measurement of 0.8256. This result is the lowest when comparing to the last methods. Furthermore, we can se that the partition of the communities involve the clustering of the characters in three large communities of size 25, 24 and 21, five medium size of 19, 15, 13 and 12, and lastly eleven small communities with less than 10 characters, being the smallest a community of just three characters. 
+
+```{r}
+Start_time <- Sys.time()
+got.network.wa <- cluster_walktrap(got.network)
+got.network.wa
+End_time <- Sys.time()
+
+print(paste('Time elapsed: ', (End_time-Start_time)))
+```
+
+```{r}
+length(got.network.wa)
+sizes(got.network.wa)
+membership(got.network.wa)
+modularity(got.network.wa)
+```
+
+```{r}
+method.compare[6,1]<- modularity(got.network.wa)
+method.compare[6,2]<- length(sizes(got.network.wa))
+method.compare[6,3]<-(End_time-Start_time)
+```
+
+```{r}
+par(mar=c(0,0,1,1))
+plot(got.network.wa,
+     got.network,
+     vertex.color=membership(got.network.wa),
+     vertex.label=seq(1:111),
+     #vertex.label=NA,
+     main="got.network network with Walktrap")
+
+```
+
+By comparing all the community detection methods calculated, we can say based on the modularity measurement that the best method is the label propagation which shows an improvement from the Louvain method and a resulting modularity of 0.8502. Moreover, the partition that we saw gives a pretty good insight about the composition of the families in the network by identifying groups that are related. This could be confirmed by checking the last names and the relationship among these characters. Additionally, if we take into account the computational cost measure in time we see that this method is also the fastest one with a time elapsed of 0.1496 minutes. In this case, considering the nature of the data it is comprehensible that the partitions are made based on the undirected case, and if we assume that we could say that Community detection is a good measure of cohesion of the network.
+
+```{r}
+library("pander")
+pandoc.table(method.compare)
+```
+
+## Assortativity coefficient.
+
+```{r}
+degree.got.network <- igraph::degree(got.network)
+got.network.degrees <- matrix(NA,nrow=ecount(got.network),ncol=2)
+edges.got.network <- get.edgelist(got.network)
+for (i in 1:ecount(got.network)){got.network.degrees[i,]<-degree.got.network[edges.got.network[i,]]}
+plot(got.network.degrees,pch=19,col="chartreuse3",main="Degree pairs for the GOT network",
+     xlab="Degree",ylab="Degree")
+assortativity_degree(got.network,V(got.network))
+```
+
+By taking a look at the plot of degree pairs we can see that the degrees are distributed along with the series, which means that characters that have different degrees connect to a variety of other characters without distinction of degree. In an assortative network, we can see that the influencers tend to link to each other and avoid linking to small degree vertices, and, that these tend to connect to other small degree vertices as well. Consequently, we are facing a highly disassortative network this can be checked with the result of the assortative ratio which is equal to -0.1901. This is expected considering the data that this network contains, due to the fact that presents some basic relations between characters so they will not be highly connected, additionally, we are creating a type of family tree which is built-in levels then even if we had a lot more of connections we still are facing to the fact that at some point the most influent characters will connect to small degree ones. 
